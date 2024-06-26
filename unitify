@@ -34,6 +34,27 @@ def create_service_dir():
         os.makedirs(directory_path)
     else:
         print("Folder did exist!")
+def replace_application_path(new_path):
+    # Define the file name
+    file_name = "unitify-exec"
+    
+    # Check if the file exists in the current working directory
+    if not os.path.isfile(file_name):
+        print(f"File '{file_name}' not found in the current working directory.")
+        return
+    
+    # Read the content of the file
+    with open(file_name, 'r') as file:
+        content = file.read()
+    
+    # Replace the pattern "APPLICATION_PATH" with the new path
+    new_content = content.replace("APPLICATION_PATH", new_path)
+    
+    # Write the new content back to the file
+    with open(file_name, 'w') as file:
+        file.write(new_content)
+    
+    print(f"Replaced 'APPLICATION_PATH' with '{new_path}' in '{file_name}'.")
 
 def start_unity():
     subprocess.run(["unitify-exec"], shell=True, executable='/bin/bash')
@@ -41,6 +62,7 @@ def start_unity():
 def setup(application_path):
     print("Setting up the thing")
     create_service_dir()
+    replace_application_path(application_path)
     subprocess.run(["sudo cp unitify-exec /bin/"], shell=True, executable="/bin/bash")
     if os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-start.service")) and os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-keepup.service")):
         print("SystemD Services already present. overwriting them")

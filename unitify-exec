@@ -11,7 +11,7 @@ xhost +SI:localuser:$(whoami)
 # Start the GNOME Terminal
 if ! pgrep -x "build.x86_64" > /dev/null; then
     echo "Unity process not found. Restarting unity..."
-    "/home/rbl/Downloads/ship/linux build/build.x86_64"
+    "APPLICATION_PATH"
 #   ~/unitify
 else
     echo "Unity process is running."
