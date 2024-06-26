@@ -57,8 +57,8 @@ elif sys.argv[1].lower() == "setup":
         subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
         subprocess.run(["systemctl --user enable unity-start"], shell=True, executable="/bin/bash")
         subprocess.run(["systemctl --user enable unity-start"], shell=True, executable="/bin/bash")
-        subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
-        subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
+        #subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
+        #subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
 elif sys.argv[1].lower() == "uninstall":
     subprocess.run(["systemctl --user stop unity-start"], shell=True, executable="/bin/bash")
     subprocess.run(["systemctl --user disable unity-start"], shell=True, executable="/bin/bash")
