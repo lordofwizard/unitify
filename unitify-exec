@@ -1,3 +1,4 @@
+#!/bin/bash
 # Ensure DISPLAY is set correctly
 export DISPLAY=:1
 export XAUTHORITY=$HOME/.Xauthority
