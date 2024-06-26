@@ -3,7 +3,7 @@ Description=Unity KeepUp Script LOW
 After=network.target
 
 [Service]
-ExecStart="/home/rbl/unitify"
+ExecStart="unitify-exec"
 Restart=always
 RestartSec=5
 Environment=DISPLAY=:1

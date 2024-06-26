@@ -37,7 +37,7 @@ def create_service_dir():
         print("Folder did exist!")
 
 def start_unity():
-    subprocess.run(["./start.sh"], shell=True, executable='/bin/bash')
+    subprocess.run(["unitify-exec"], shell=True, executable='/bin/bash')
 
 if len(sys.argv) == 1:
     start_unity()
@@ -48,6 +48,7 @@ elif len(sys.argv) != 2:
 elif sys.argv[1].lower() == "setup":
     print("Setting up the thing")
     create_service_dir()
+    subprocess.run(["sudo cp unitify-exec /bin/"], shell=True, executable="/bin/bash")
     if os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-start.service")) and os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-keepup.service")):
         print("SystemD Services already present. overwriting them")
         subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
