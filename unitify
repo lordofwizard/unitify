@@ -1,5 +1,8 @@
 #!/usr/bin/python3
-import os,sys,subprocess
+import os
+import subprocess
+import argparse
+
 def get_user_path():
     """
     Get the path of the current user's home directory.
@@ -8,8 +11,6 @@ def get_user_path():
     str: The path of the user's home directory.
     """
     return os.path.expanduser("~")
-
-APPLICATION_PATH=get_user_path()+"/Downloads/ship/linux build/build.x86_64"
 
 def file_exists(file_path):
     """
@@ -26,8 +27,6 @@ def file_exists(file_path):
 def create_service_dir():
     """
     Create a directory if it does not already exist.
-
-    directory_path (str): The path of the directory to create.
     """
     directory_path = os.path.expanduser("~/.config/systemd/user")
     if not os.path.exists(directory_path):
@@ -39,13 +38,7 @@ def create_service_dir():
 def start_unity():
     subprocess.run(["unitify-exec"], shell=True, executable='/bin/bash')
 
-if len(sys.argv) == 1:
-    start_unity()
-    #sys.exit(1)
-elif len(sys.argv) != 2:
-    print("Usage: unitify <arg>")
-    sys.exit(1)
-elif sys.argv[1].lower() == "setup":
+def setup(application_path):
     print("Setting up the thing")
     create_service_dir()
     subprocess.run(["sudo cp unitify-exec /bin/"], shell=True, executable="/bin/bash")
@@ -59,7 +52,8 @@ elif sys.argv[1].lower() == "setup":
         subprocess.run(["systemctl --user start unity-start"], shell=True, executable="/bin/bash")
         subprocess.run(["systemctl --user enable unity-keepup"], shell=True, executable="/bin/bash")
         subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
-elif sys.argv[1].lower() == "uninstall":
+
+def uninstall():
     subprocess.run(["systemctl --user stop unity-start"], shell=True, executable="/bin/bash")
     subprocess.run(["systemctl --user disable unity-start"], shell=True, executable="/bin/bash")
     subprocess.run(["systemctl --user stop unity-keepup"], shell=True, executable="/bin/bash")
@@ -68,18 +62,30 @@ elif sys.argv[1].lower() == "uninstall":
     print("Stopped SystemD services")
     subprocess.run(["rm ~/.config/systemd/user/unity-start.service ~/.config/systemd/user/unity-keepup.service"], shell=True, executable="/bin/bash")
     print("Removed the services related files")
-    print("Uninstalling ")
-else:
-    print("Invalid Argument Provided")
+    print("Uninstalling")
 
+def main():
+    parser = argparse.ArgumentParser(description="Unity management script.")
+    subparsers = parser.add_subparsers(dest='command', help='Commands')
 
-# Extract the single argument
-#argument = sys.argv[1]
+    # Parser for the 'setup' command
+    setup_parser = subparsers.add_parser('setup', help='Setup the unity environment')
+    setup_parser.add_argument('--path', required=True, help='Path to the application')
 
-# Use the argument
-#print("Argument provided:", argument)
+    # Parser for the 'uninstall' command
+    uninstall_parser = subparsers.add_parser('uninstall', help='Uninstall the unity environment')
 
-#print(file_exists(APPLICATION_PATH))
-#create_service_dir()
+    args = parser.parse_args()
 
+    if args.command is None:
+        start_unity()
+    elif args.command == 'setup':
+        setup(args.path)
+    elif args.command == 'uninstall':
+        uninstall()
+    else:
+        parser.print_help()
+
+if __name__ == '__main__':
+    main()
 
