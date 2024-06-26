@@ -78,7 +78,8 @@ def main():
     args = parser.parse_args()
 
     if args.command is None:
-        start_unity()
+        #start_unity()
+        parser.print_help()
     elif args.command == 'setup':
         setup(args.path)
     elif args.command == 'uninstall':
