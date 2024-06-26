@@ -29,7 +29,7 @@ def create_service_dir():
 
     directory_path (str): The path of the directory to create.
     """
-    directory_path = os.path.expanduser("~/.config/user")
+    directory_path = os.path.expanduser("~/.config/systemd/user")
     if not os.path.exists(directory_path):
         print("Folder didn't exist for user services, creating it!")
         os.makedirs(directory_path)
@@ -47,7 +47,24 @@ elif len(sys.argv) != 2:
     sys.exit(1)
 elif sys.argv[1].lower() == "setup":
     print("Setting up the thing")
+    create_service_dir()
+    if os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-start.service")) and os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-keepup.service")):
+        print("SystemD Services already present. overwriting them")
+        subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
+    else:
+        print("files not present")
+        subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
+        subprocess.run(["systemctl --user enable unity-start"], shell=True, executable="/bin/bash")
+        subprocess.run(["systemctl --user enable unity-keepup"], shell=True, executable="/bin/bash")
 elif sys.argv[1].lower() == "uninstall":
+    subprocess.run(["systemctl --user stop unity-start"], shell=True, executable="/bin/bash")
+    subprocess.run(["systemctl --user disable unity-start"], shell=True, executable="/bin/bash")
+    subprocess.run(["systemctl --user stop unity-keepup"], shell=True, executable="/bin/bash")
+    subprocess.run(["systemctl --user disable unity-keepup"], shell=True, executable="/bin/bash")
+
+    print("Stopped SystemD services")
+    subprocess.run(["rm ~/.config/systemd/user/unity-start.service ~/.config/systemd/user/unity-keepup.service"], shell=True, executable="/bin/bash")
+    print("Removed the services related files")
     print("Uninstalling ")
 else:
     print("Invalid Argument Provided")
