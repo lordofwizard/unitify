@@ -1,0 +1,13 @@
+[Unit]
+Description=Unity KeepUp Script LOW
+After=network.target
+
+[Service]
+ExecStart="/home/rbl/unitify"
+Restart=always
+RestartSec=5
+Environment=DISPLAY=:1
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
+[Install]
+WantedBy=default.target

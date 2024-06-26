@@ -1,0 +1,12 @@
+[Unit]
+Description=Service To Start Unity App.
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/home/rbl/unitify
+#Restart=on-failure
+
+[Install]
+WantedBy=default.target

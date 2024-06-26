@@ -36,15 +36,34 @@ def create_service_dir():
     else:
         print("Folder did exist!")
 
-if len(sys.argv) != 2:
+def execute_commands():
+    # Define the sequence of commands to be executed
+    commands = [
+        'echo "Function for no argument called."',
+        'export DISPLAY=:1',
+        'export XAUTHORITY=$HOME/.Xauthority',
+        'export XDG_RUNTIME_DIR=/run/user/$UID',
+        'xauth add $DISPLAY . d7c11dba2b51ce5b975722e599eeda00',
+        'xhost +SI:localuser:$(whoami)',
+        'if ! pgrep -x "build.x86_64" > /dev/null; then echo "Unity process not found. Restarting unity..."; "/home/rbl/Downloads/ship/linux build/build.x86_64"; else echo "Unity process is running."; fi'
+    ]
+
+    # Execute each command in sequence
+    for command in commands:
+        subprocess.run(command, shell=True, executable='/bin/bash')
+
+if len(sys.argv) == 1:
+    execute_commands()
+    #print("Ohh")
+    #sys.exit(1)
+elif len(sys.argv) != 2:
     print("Usage: unitify <arg>")
     sys.exit(1)
-
 # Extract the single argument
-argument = sys.argv[1]
+#argument = sys.argv[1]
 
 # Use the argument
-print("Argument provided:", argument)
+#print("Argument provided:", argument)
 
 #print(file_exists(APPLICATION_PATH))
 #create_service_dir()
