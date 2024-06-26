@@ -36,19 +36,23 @@ def create_service_dir():
     else:
         print("Folder did exist!")
 
-def execute_commands():
-    # Define the sequence of commands to be executed
-
-    # Execute each command in sequence
+def start_unity():
     subprocess.run(["./start.sh"], shell=True, executable='/bin/bash')
 
 if len(sys.argv) == 1:
-    execute_commands()
-    #print("Ohh")
+    start_unity()
     #sys.exit(1)
 elif len(sys.argv) != 2:
     print("Usage: unitify <arg>")
     sys.exit(1)
+elif sys.argv[1].lower() == "setup":
+    print("Setting up the thing")
+elif sys.argv[1].lower() == "uninstall":
+    print("Uninstalling ")
+else:
+    print("Invalid Argument Provided")
+
+
 # Extract the single argument
 #argument = sys.argv[1]
 
