@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os,sys
+import os,sys,subprocess
 def get_user_path():
     """
     Get the path of the current user's home directory.
