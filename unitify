@@ -50,14 +50,17 @@ def setup(application_path):
         subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
         subprocess.run(["systemctl --user enable unity-start"], shell=True, executable="/bin/bash")
         subprocess.run(["systemctl --user start unity-start"], shell=True, executable="/bin/bash")
-        subprocess.run(["systemctl --user enable unity-keepup"], shell=True, executable="/bin/bash")
-        subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
+def keepup():
+    subprocess.run(["systemctl --user enable unity-keepup"], shell=True, executable="/bin/bash")
+    subprocess.run(["systemctl --user start unity-keepup"], shell=True, executable="/bin/bash")
+
+def keepdown():
+    subprocess.run(["systemctl --user stop unity-keepup"], shell=True, executable="/bin/bash")
+    subprocess.run(["systemctl --user disable unity-keepup"], shell=True, executable="/bin/bash")
 
 def uninstall():
     subprocess.run(["systemctl --user stop unity-start"], shell=True, executable="/bin/bash")
     subprocess.run(["systemctl --user disable unity-start"], shell=True, executable="/bin/bash")
-    subprocess.run(["systemctl --user stop unity-keepup"], shell=True, executable="/bin/bash")
-    subprocess.run(["systemctl --user disable unity-keepup"], shell=True, executable="/bin/bash")
 
     print("Stopped SystemD services")
     subprocess.run(["rm ~/.config/systemd/user/unity-start.service ~/.config/systemd/user/unity-keepup.service"], shell=True, executable="/bin/bash")
@@ -74,9 +77,9 @@ def main():
 
     # Parser for the 'uninstall' command
     uninstall_parser = subparsers.add_parser('uninstall', help='Uninstall the unity environment')
-
+    keepup_parser = subparsers.add_parser('keepup', help='KeepUp the application and check after 5 secs')
+    keepdown_parser = subparsers.add_parser('keepdown', help='Disable the keepup functionality')
     args = parser.parse_args()
-
     if args.command is None:
         #start_unity()
         parser.print_help()
@@ -84,6 +87,10 @@ def main():
         setup(args.path)
     elif args.command == 'uninstall':
         uninstall()
+    elif args.command == 'keepdown':
+        keepdown()
+    elif args.command == 'keepup':
+        keepup()
     else:
         parser.print_help()
 
