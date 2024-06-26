@@ -6,6 +6,9 @@ Wants=graphical-session.target
 [Service]
 Type=simple
 ExecStart=unitify-exec
+Environment=DISPLAY=:1
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
 #Restart=on-failure
 
 [Install]
