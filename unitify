@@ -12,6 +12,8 @@ def get_user_path():
     """
     return os.path.expanduser("~")
 
+
+
 def file_exists(file_path):
     """
     Check if a file exists at the given file path.
@@ -37,7 +39,7 @@ def create_service_dir():
 
 def create_unity_start_service():
         # Define the file content
-    service_content = """[Unit]
+    service_content = f"""[Unit]
 Description=Service To Start Unity App.
 After=graphical-session.target
 After=gnome-session.service
@@ -49,7 +51,7 @@ Wants=gnome-session.target
 [Service]
 Type=simple
 ExecStart=unitify-exec
-Environment=DISPLAY=:0
+Environment={check_auto_login_display()}
 Environment=XDG_RUNTIME_DIR=/run/user/%U
 Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
 #Restart=on-failure
@@ -65,9 +67,45 @@ WantedBy=default.target
         
     print(f'Service file created at: {target_file_path}')
 
+def check_auto_login_display():
+    config_file_paths = ['/etc/gdm3/custom.conf', '/etc/gdm/custom.conf']
+    auto_login_enabled = False
+
+    for config_file_path in config_file_paths:
+        if os.path.exists(config_file_path):
+            try:
+                with open(config_file_path, 'r') as file:
+                    lines = file.readlines()
+                
+                for line in lines:
+                    if 'AutomaticLoginEnable=' in line:
+                        # Remove any leading or trailing whitespace
+                        stripped_line = line.strip()
+                        # Check if the line is not commented out
+                        if not stripped_line.startswith('#'):
+                            # Check the value of AutomaticLoginEnable
+                            if 'true' in stripped_line.split('=')[1].lower():
+                                auto_login_enabled = True
+                                break
+                        else:
+                            # If commented, we assume it's false by default
+                            auto_login_enabled = False
+
+                if auto_login_enabled:
+                    return "DISPLAY=:0"
+                else:
+                    return "DISPLAY=:1"
+            
+            except Exception as e:
+                print(f"An error occurred while reading {config_file_path}: {e}")
+                return None
+    
+    # If no valid file is found or read
+    print("Error: Neither /etc/gdm3/custom.conf nor /etc/gdm/custom.conf could be found or read.")
+    return None
 
 def create_unity_keepup_service():
-    service_content = """[Unit]
+    service_content = f"""[Unit]
 Description=Unity KeepUp Script LOW
 After=network.target
 
@@ -75,7 +113,7 @@ After=network.target
 ExecStart=unitify-exec
 Restart=always
 RestartSec=5
-Environment=DISPLAY=:1
+Environment={check_auto_login_display()}
 Environment=XDG_RUNTIME_DIR=/run/user/%U
 Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
 
@@ -115,8 +153,8 @@ import subprocess
 
 def create_unitify_exec(app_full_path):
         # Define the script template with the APP_PROC placeholder
-    script_template = """#!/bin/bash
-export DISPLAY=:0
+    script_template = f"""#!/bin/bash
+export {check_auto_login_display()}
 export XAUTHORITY=/run/user/1000/gdm/Xauthority
 export XDG_RUNTIME_DIR=/run/user/$UID
 if ! pgrep -x "APP_PROC" > /dev/null; then
