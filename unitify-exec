@@ -1,17 +1,19 @@
 #!/bin/bash
 # Ensure DISPLAY is set correctly
-export DISPLAY=:1
-export XAUTHORITY=$HOME/.Xauthority
+export DISPLAY=:0
+#export XAUTHORITY=$HOME/.Xauthority
+export XAUTHORITY=/run/user/1000/gdm/Xauthority
 export XDG_RUNTIME_DIR=/run/user/$UID
 
 # Add the X authority cookie
-xauth add $DISPLAY . d7c11dba2b51ce5b975722e599eeda00
-xhost +SI:localuser:$(whoami)
+#xauth add $DISPLAY . d7c11dba2b51ce5b975722e599eeda00
+#xhost +SI:localuser:$(whoami)
 
 # Start the GNOME Terminal
 if ! pgrep -x "build.x86_64" > /dev/null; then
     echo "Unity process not found. Restarting unity..."
-    "APPLICATION_PATH"
+    sleep 10
+    "/home/ubuntu/Downloads/linux_build/build.x86_64"
 #   ~/unitify
 else
     echo "Unity process is running."
