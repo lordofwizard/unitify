@@ -157,6 +157,8 @@ def create_unitify_exec(app_full_path):
 export {check_auto_login_display()}
 export XAUTHORITY=/run/user/1000/gdm/Xauthority
 export XDG_RUNTIME_DIR=/run/user/$UID
+xauth add "$DISPLAY" MIT-MAGIC-COOKIE-1 $(XAUTHORITY=/run/user/1000/gdm/Xauthority xauth list | awk '{print $3}' | uniq)
+
 if ! pgrep -x "APP_PROC" > /dev/null; then
     echo "Unity process not found. Restarting unity..."
     sleep 10
