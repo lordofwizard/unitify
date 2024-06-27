@@ -34,23 +34,74 @@ def create_service_dir():
         os.makedirs(directory_path)
     else:
         print("Folder did exist!")
+
+def create_unity_start_service():
+        # Define the file content
+    service_content = """[Unit]
+Description=Service To Start Unity App.
+After=graphical-session.target
+After=gnome-session.service
+After=gnome-session-daemon.service
+After=gnome.target
+Wants=graphical-session.target
+Wants=gnome-session.target
+
+[Service]
+Type=simple
+ExecStart=unitify-exec
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
+#Restart=on-failure
+
+[Install]
+WantedBy=default.target
+"""
+
+    target_file_path = os.path.expanduser('~/.config/systemd/user/unity-start.service')
+    os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+    with open(target_file_path, 'w') as service_file:
+            service_file.write(service_content)
+        
+    print(f'Service file created at: {target_file_path}')
+
+
+def create_unity_keepup_service():
+    service_content = """[Unit]
+Description=Unity KeepUp Script LOW
+After=network.target
+
+[Service]
+ExecStart=unitify-exec
+Restart=always
+RestartSec=5
+Environment=DISPLAY=:1
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
+
+[Install]
+WantedBy=default.target
+"""
+
+    target_file_path = os.path.expanduser('~/.config/systemd/user/unity-keepup.service')
+    os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+    with open(target_file_path, 'w') as service_file:
+            service_file.write(service_content)
+        
+    print(f'Service file created at: {target_file_path}')
+
 def replace_application_path(new_path):
     # Define the file name
     file_name = "unitify-exec"
     
-    # Check if the file exists in the current working directory
     if not os.path.isfile(file_name):
         print(f"File '{file_name}' not found in the current working directory.")
         return
     
-    # Read the content of the file
     with open(file_name, 'r') as file:
         content = file.read()
     
-    # Replace the pattern "APPLICATION_PATH" with the new path
     new_content = content.replace("APPLICATION_PATH", new_path)
-    
-    # Write the new content back to the file
     with open(file_name, 'w') as file:
         file.write(new_content)
     
@@ -59,17 +110,60 @@ def replace_application_path(new_path):
 def start_unity():
     subprocess.run(["unitify-exec"], shell=True, executable='/bin/bash')
 
+import os
+import subprocess
+
+def create_unitify_exec(app_full_path):
+        # Define the script template with the APP_PROC placeholder
+    script_template = """#!/bin/bash
+export DISPLAY=:0
+export XAUTHORITY=/run/user/1000/gdm/Xauthority
+export XDG_RUNTIME_DIR=/run/user/$UID
+if ! pgrep -x "APP_PROC" > /dev/null; then
+    echo "Unity process not found. Restarting unity..."
+    sleep 10
+    "APP_PROC"
+else
+    echo "Unity process is running."
+fi
+"""
+    script_content = script_template.replace("APP_PROC", app_full_path)
+    target_file_path = '/bin/unitify-exec'
+    with open('/tmp/unitify-exec', 'w') as temp_file:
+            temp_file.write(script_content)
+        
+    subprocess.run(['sudo', 'mv', '/tmp/unitify-exec', target_file_path], check=True)
+    subprocess.run(['sudo', 'chmod', '+x', target_file_path], check=True)
+    print(f'Script created and made executable at: {target_file_path}')
+
+
 def setup(application_path):
+    
     print("Setting up the thing")
+
     create_service_dir()
     replace_application_path(application_path)
-    subprocess.run(["sudo cp unitify-exec /bin/"], shell=True, executable="/bin/bash")
+
+    create_unitify_exec(application_path)
+
+    #subprocess.run(["sudo cp unitify-exec /bin/"], shell=True, executable="/bin/bash")
+
+
     if os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-start.service")) and os.path.exists(os.path.expanduser("~/.config/systemd/user/unity-keepup.service")):
+
         print("SystemD Services already present. overwriting them")
-        subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
+        #subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
+
+        create_unity_start_service()
+        create_unity_keepup_service()
+
     else:
         print("files not present")
-        subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
+        #subprocess.run(["cp -f ./services/* ~/.config/systemd/user/"], shell=True, executable="/bin/bash")
+        
+        create_unity_start_service()
+        create_unity_keepup_service()
+        
         subprocess.run(["systemctl --user enable unity-start"], shell=True, executable="/bin/bash")
         #subprocess.run(["systemctl --user start unity-start"], shell=True, executable="/bin/bash")
 
@@ -84,7 +178,8 @@ def keepdown():
 def uninstall():
     subprocess.run(["systemctl --user stop unity-start"], shell=True, executable="/bin/bash")
     subprocess.run(["systemctl --user disable unity-start"], shell=True, executable="/bin/bash")
-
+    subprocess.run(["systemctl --user stop unity-keepup"], shell=True, executable="/bin/bash")
+    subprocess.run(["systemctl --user disable unity-keepup"], shell=True, executable="/bin/bash")
     print("Stopped SystemD services")
     subprocess.run(["rm ~/.config/systemd/user/unity-start.service ~/.config/systemd/user/unity-keepup.service"], shell=True, executable="/bin/bash")
     print("Removed the services related files")
