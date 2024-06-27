@@ -153,8 +153,10 @@ import subprocess
 
 def create_unitify_exec(app_full_path):
         # Define the script template with the APP_PROC placeholder
-    script_template = f"""#!/bin/bash
+    var1 = f"""#!/bin/bash
 export {check_auto_login_display()}
+"""
+    var2 = """
 export XAUTHORITY=/run/user/1000/gdm/Xauthority
 export XDG_RUNTIME_DIR=/run/user/$UID
 xauth add "$DISPLAY" MIT-MAGIC-COOKIE-1 $(XAUTHORITY=/run/user/1000/gdm/Xauthority xauth list | awk '{print $3}' | uniq)
@@ -165,8 +167,9 @@ if ! pgrep -x "APP_PROC" > /dev/null; then
     "APP_PROC"
 else
     echo "Unity process is running."
-fi
+fi  
 """
+    script_template = var1 + var2
     script_content = script_template.replace("APP_PROC", app_full_path)
     target_file_path = '/bin/unitify-exec'
     with open('/tmp/unitify-exec', 'w') as temp_file:
